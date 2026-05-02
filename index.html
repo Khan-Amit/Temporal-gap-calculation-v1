@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>V5 • Temporal Gap Simulator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: #0a0f1e;
+            font-family: system-ui, -apple-system, 'Segoe UI', monospace;
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 550px;
+            width: 100%;
+            background: #111827cc;
+            backdrop-filter: blur(4px);
+            border-radius: 48px;
+            padding: 20px;
+            border: 1px solid #2d3a5e;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+        }
+        h1 {
+            font-size: 1.6rem;
+            margin: 0 0 4px;
+            text-align: center;
+            background: linear-gradient(135deg, #fff, #7aa2f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .sub {
+            text-align: center;
+            color: #7e8cae;
+            font-size: 0.7rem;
+            margin-bottom: 20px;
+        }
+        /* domain selector */
+        .domain-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        select, button {
+            background: #1e2a3e;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 40px;
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        button {
+            background: #2e4a7a;
+        }
+        button:active { transform: scale(0.97); }
+        /* dual slider area */
+        .dual-slider-area {
+            background: #010a1a;
+            border-radius: 28px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        .slider-group {
+            margin: 12px 0;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            color: #ccddf8;
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #2a3555;
+            border-radius: 10px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            width: 22px;
+            height: 22px;
+            background: #ffaa44;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .dual-thumb-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .thumb-box {
+            flex: 1;
+            text-align: center;
+            background: #00000055;
+            border-radius: 28px;
+            padding: 12px;
+        }
+        .thumb-box .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        .thumb-label {
+            font-size: 0.7rem;
+            color: #aac9ff;
+        }
+        .outcome {
+            background: #00000066;
+            border-radius: 32px;
+            padding: 16px;
+            text-align: center;
+            margin-top: 16px;
+        }
+        .result-bit {
+            font-size: 3rem;
+            font-weight: bold;
+            letter-spacing: 4px;
+        }
+        .result-0 { color: #2ecc71; }
+        .result-1 { color: #e67e22; }
+        .probability {
+            font-size: 0.9rem;
+            margin-top: 8px;
+            color: #bbccff;
+        }
+        .footer {
+            font-size: 0.65rem;
+            text-align: center;
+            margin-top: 20px;
+            color: #5b6b8e;
+        }
+        hr { border-color: #2d3a5e; margin: 12px 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>⨀ V5 • TEMPORAL GAP</h1>
+    <div class="sub">past (Tp) / future (Tf) | helix width | probability → 0 or 1</div>
+
+    <div class="domain-row">
+        <select id="domainSelect">
+            <option value="default">🌀 Custom</option>
+            <option value="vtol">🚁 VTOL</option>
+            <option value="economy">📈 Economy</option>
+            <option value="ai">🤖 AI</option>
+            <option value="relationship">💕 Relationship</option>
+            <option value="solar">☀️ Solar</option>
+        </select>
+        <button id="saveDomainBtn">💾 Save preset</button>
+        <button id="resetBtn">⟳ Reset</button>
+    </div>
+
+    <div class="dual-slider-area">
+        <div class="dual-thumb-container">
+            <div class="thumb-box">
+                <div class="thumb-label">⬅ Tp (past / known)</div>
+                <div class="value" id="tpValue">5</div>
+                <div>intensity 1‑9</div>
+            </div>
+            <div class="thumb-box">
+                <div class="thumb-label">Tf (future / unknown) ➔</div>
+                <div class="value" id="tfValue">5</div>
+                <div>intensity 1‑9</div>
+            </div>
+        </div>
+        <div class="slider-group">
+            <div class="slider-label"><span>Tp (past strength)</span><span id="tpSliderVal">5</span></div>
+            <input type="range" id="tpSlider" min="1" max="9" step="1" value="5">
+        </div>
+        <div class="slider-group">
+            <div class="slider-label"><span>Tf (future potential)</span><span id="tfSliderVal">5</span></div>
+            <input type="range" id="tfSlider" min="1" max="9" step="1" value="5">
+        </div>
+        <div class="slider-group">
+            <div class="slider-label"><span>🌀 Helix width (H)</span><span id="hValue">5</span></div>
+            <input type="range" id="hSlider" min="1" max="9" step="1" value="5">
+        </div>
+    </div>
+
+    <div class="outcome">
+        <div class="result-bit" id="resultBit">—</div>
+        <div class="probability" id="probText">P(1) = 0.50</div>
+        <div class="probability" id="gapDesc">gap: Tp % / H → decision speed</div>
+    </div>
+    <div class="footer">
+        Tp length + H → probability of 1. The gap shortens when Tp long or H narrow → faster decisions.
+    </div>
+</div>
+
+<script>
+    // ---------- DOM elements ----------
+    const tpSlider = document.getElementById('tpSlider');
+    const tfSlider = document.getElementById('tfSlider');
+    const hSlider = document.getElementById('hSlider');
+    const tpValueSpan = document.getElementById('tpValue');
+    const tfValueSpan = document.getElementById('tfValue');
+    const tpSliderVal = document.getElementById('tpSliderVal');
+    const tfSliderVal = document.getElementById('tfSliderVal');
+    const hValueSpan = document.getElementById('hValue');
+    const resultBitSpan = document.getElementById('resultBit');
+    const probTextSpan = document.getElementById('probText');
+    const gapDescSpan = document.getElementById('gapDesc');
+    const domainSelect = document.getElementById('domainSelect');
+    const saveDomainBtn = document.getElementById('saveDomainBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // ---------- state ----------
+    let tp = 5;
+    let tf = 5;
+    let h = 5;
+
+    // domain presets (default values)
+    const presets = {
+        default: { tp:5, tf:5, h:5 },
+        vtol:    { tp:7, tf:3, h:4, desc:"VTOL: high past experience, narrow future → fast decisions" },
+        economy: { tp:6, tf:4, h:5, desc:"Economy: balanced, moderate speed" },
+        ai:      { tp:8, tf:2, h:3, desc:"AI: heavy training, very fast inference" },
+        relationship: { tp:4, tf:6, h:7, desc:"Relationship: open future, slower decisions" },
+        solar:   { tp:5, tf:5, h:6, desc:"Solar: balanced with adaptive learning" }
+    };
+
+    // probability function: P(1) = 1 / (1 + exp( - (tp - h) / 3 )) but also influenced by tf?
+    // Simpler: P(1) = sigmoid( (tp - h) / 3 ) clamped to 0.01-0.99
+    function computeProbability(tpVal, hVal) {
+        let z = (tpVal - hVal) / 3.0;
+        let p = 1 / (1 + Math.exp(-z));
+        return Math.min(0.99, Math.max(0.01, p));
+    }
+
+    function updateUI() {
+        tpSlider.value = tp;
+        tfSlider.value = tf;
+        hSlider.value = h;
+        tpValueSpan.innerText = tp;
+        tfValueSpan.innerText = tf;
+        tpSliderVal.innerText = tp;
+        tfSliderVal.innerText = tf;
+        hValueSpan.innerText = h;
+
+        let p1 = computeProbability(tp, h);
+        let random = Math.random();
+        let result = random < p1 ? 1 : 0;
+        resultBitSpan.innerText = result;
+        resultBitSpan.className = `result-bit ${result === 1 ? 'result-1' : 'result-0'}`;
+        probTextSpan.innerText = `P(1) = ${p1.toFixed(3)}  |  random: ${random.toFixed(3)} → ${result}`;
+
+        let gapLen = tp - h; // negative means wide gap
+        let speed = gapLen > 0 ? "fast" : (gapLen < 0 ? "slow / explorative" : "balanced");
+        gapDescSpan.innerText = `effective gap: ${gapLen>0?'short':'long'} (${gapLen.toFixed(1)}) → decision speed: ${speed}`;
+    }
+
+    // events
+    function syncFromSliders() {
+        tp = parseInt(tpSlider.value);
+        tf = parseInt(tfSlider.value);
+        h = parseInt(hSlider.value);
+        updateUI();
+    }
+    tpSlider.addEventListener('input', syncFromSliders);
+    tfSlider.addEventListener('input', syncFromSliders);
+    hSlider.addEventListener('input', syncFromSliders);
+
+    // domain preset loading
+    function loadDomain(domainKey) {
+        let p = presets[domainKey];
+        if (!p) p = presets.default;
+        tp = p.tp;
+        tf = p.tf;
+        h = p.h;
+        syncFromSliders();
+        if (p.desc) gapDescSpan.innerText = p.desc + " | " + gapDescSpan.innerText;
+    }
+    domainSelect.addEventListener('change', (e) => {
+        loadDomain(e.target.value);
+    });
+
+    // save current as custom preset (IndexedDB)
+    let db = null;
+    function openDB() {
+        return new Promise((resolve) => {
+            const request = indexedDB.open('TemporalGapDB', 1);
+            request.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains('userPresets')) {
+                    db.createObjectStore('userPresets', { keyPath: 'name' });
+                }
+            };
+            request.onsuccess = (e) => { db = e.target.result; resolve(db); };
+            request.onerror = () => resolve(null);
+        });
+    }
+    saveDomainBtn.addEventListener('click', async () => {
+        let name = prompt("Save this preset as:", "my_preset");
+        if (!name) return;
+        await openDB();
+        if (!db) { alert("IndexedDB not available"); return; }
+        let tx = db.transaction('userPresets', 'readwrite');
+        let store = tx.objectStore('userPresets');
+        store.put({ name: name, tp: tp, tf: tf, h: h });
+        tx.oncomplete = () => alert(`Saved "${name}"`);
+    });
+    // (optional load custom preset: could add a dropdown later)
+
+    resetBtn.addEventListener('click', () => {
+        tp = 5; tf = 5; h = 5;
+        syncFromSliders();
+        domainSelect.value = "default";
+    });
+
+    // init
+    syncFromSliders();
+    openDB().catch(console.warn);
+</script>
+</body>
+</html>
